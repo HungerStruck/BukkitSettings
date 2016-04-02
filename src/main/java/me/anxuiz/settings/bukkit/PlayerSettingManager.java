@@ -7,9 +7,11 @@ import javax.annotation.Nullable;
 
 import me.anxuiz.settings.Setting;
 import me.anxuiz.settings.SettingCallbackManager;
+import me.anxuiz.settings.TypeParseException;
 import me.anxuiz.settings.base.AbstractSettingManager;
 import me.anxuiz.settings.base.SimpleSettingCallbackManager;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
@@ -38,8 +40,16 @@ public class PlayerSettingManager extends AbstractSettingManager {
     @Override
     public Object getRawValue(Setting setting) {
         Preconditions.checkNotNull(setting, "setting");
-
-        Object value = this.getMetadataValue(getMetadataKey(setting));
+        Object value = null;
+        if (Bukkit.getRedis() != null && Bukkit.getRedis().getResource() != null) {
+            try {
+                value = setting.getType().parse(Bukkit.getRedis().getResource().get("BUKKITSETTINGS:METADATA:" + this.player.getUniqueId().toString() + ":" + getMetadataKey(setting)));
+            } catch (TypeParseException e) {
+                e.printStackTrace();
+            }
+        } else {
+            value = this.getMetadataValue(getMetadataKey(setting));;
+        }
 
         if(value != null && setting.getType().isInstance(value)) {
             return value;
@@ -61,7 +71,11 @@ public class PlayerSettingManager extends AbstractSettingManager {
 
         this.callbackManager.notifyChange(this, setting, oldValue, value, notifyGlobal);
 
-        this.player.setMetadata(getMetadataKey(setting), new FixedMetadataValue(this.parent, value));
+        if (Bukkit.getRedis() != null && Bukkit.getRedis().getResource() != null) {
+            Bukkit.getRedis().getResource().set("BUKKITSETTINGS:METADATA:" + this.player.getUniqueId().toString() + ":" + getMetadataKey(setting), setting.getType().serialize(value));
+        } else {
+            this.player.setMetadata(getMetadataKey(setting), new FixedMetadataValue(this.parent, value));
+        }
     }
 
     public void deleteValue(Setting setting) {
