@@ -3,6 +3,13 @@ BukkitSettings
 
 Plugin for handling a player's settings
 
+This Fork
+==============
+
+This fork of BukkitSettings provides support for StruckBukkit (a private implementation of Bukkit created by the HungerStruck development team). StruckBukkit centralizes our redis connection pool, and this version of BukkitSettings will store settings data through redis for persistence across servers. 
+
+If this plugin is used in a non-StruckBukkit environment, it will still function normally, and instead default to using metadata to store settings info. However, for non-redis supporting Bukkit implementations, please use @OvercastNetwork's [BukkitSettings plugin](https://github.com/OvercastNetwork/BukkitSettings).
+
 Permissions
 ===========
 
