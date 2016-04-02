@@ -10,6 +10,10 @@ target
 .project
 .settings
 
+# Intellij
+.idea
+*.iml
+
 # Vim generated files
 *~
 *.swp
