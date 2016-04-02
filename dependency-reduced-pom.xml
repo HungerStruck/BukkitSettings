@@ -4,7 +4,7 @@
   <groupId>me.anxuiz</groupId>
   <artifactId>bukkit-settings</artifactId>
   <name>BukkitSettings</name>
-  <version>0.2.0-SNAPSHOT</version>
+  <version>1.9-SNAPSHOT</version>
   <description>Bukkit plugin and API for controlling player settings.</description>
   <licenses>
     <license>
@@ -14,9 +14,9 @@
     </license>
   </licenses>
   <scm>
-    <connection>scm:git:git@github.com:Anxuiz/BukkitSettings.git</connection>
-    <developerConnection>scm:git:git@github.com:Anxuiz/BukkitSettings.git</developerConnection>
-    <url>https://github.com/Anxuiz/BukkitSettings</url>
+    <connection>scm:git:git@github.com:OvercastNetwork/BukkitSettings.git</connection>
+    <developerConnection>scm:git:git@github.com:OvercastNetwork/BukkitSettings.git</developerConnection>
+    <url>https://github.com/OvercastNetwork/BukkitSettings</url>
   </scm>
   <build>
     <sourceDirectory>${basedir}/src/main/java/</sourceDirectory>
@@ -30,7 +30,7 @@
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>2.5.1</version>
+        <version>3.1</version>
         <configuration>
           <source>1.7</source>
           <target>1.7</target>
@@ -38,7 +38,7 @@
       </plugin>
       <plugin>
         <artifactId>maven-shade-plugin</artifactId>
-        <version>2.1</version>
+        <version>2.2</version>
         <executions>
           <execution>
             <phase>package</phase>
@@ -59,12 +59,8 @@
   </build>
   <repositories>
     <repository>
-      <id>bukkit-repo</id>
-      <url>http://repo.bukkit.org/content/groups/public</url>
-    </repository>
-    <repository>
-      <id>repo.oc.tc</id>
-      <url>http://repo.oc.tc/content/groups/public</url>
+      <id>overcast</id>
+      <url>https://repo.oc.tc/content/groups/public</url>
     </repository>
   </repositories>
   <dependencies>
@@ -75,26 +71,26 @@
       <scope>compile</scope>
     </dependency>
     <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-      <version>13.0</version>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
       <groupId>net.sourceforge.findbugs</groupId>
       <artifactId>jsr305</artifactId>
       <version>1.3.7</version>
       <scope>provided</scope>
     </dependency>
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>14.0.1</version>
+      <scope>compile</scope>
+    </dependency>
   </dependencies>
   <distributionManagement>
     <repository>
-      <id>repo.oc.tc</id>
-      <url>http://repo.oc.tc/content/repositories/releases</url>
+      <id>overcast-deployment</id>
+      <url>https://repo.oc.tc/content/repositories/releases</url>
     </repository>
     <snapshotRepository>
-      <id>repo.oc.tc</id>
-      <url>http://repo.oc.tc/content/repositories/snapshots</url>
+      <id>overcast-deployment</id>
+      <url>https://repo.oc.tc/content/repositories/snapshots</url>
     </snapshotRepository>
   </distributionManagement>
   <properties>
