@@ -43,7 +43,7 @@ public class PlayerSettingManager extends AbstractSettingManager {
         Preconditions.checkNotNull(setting, "setting");
         Object value = null;
 
-        if (Bukkit.getRedis() != null) {
+        if ("StruckBukkit".equals(Bukkit.getName()) && Bukkit.getRedis() != null) {
             try (Jedis jedis = Bukkit.getRedis().getResource()) {
                 String rawRedis = jedis.get("bukkitsettings:metadata:" + this.player.getUniqueId().toString() + ":" + getMetadataKey(setting));
                 if (rawRedis == null) {
@@ -80,7 +80,7 @@ public class PlayerSettingManager extends AbstractSettingManager {
 
         this.callbackManager.notifyChange(this, setting, oldValue, value, notifyGlobal);
 
-        if (Bukkit.getRedis() != null) {
+        if ("StruckBukkit".equals(Bukkit.getName()) && Bukkit.getRedis() != null) {
             try (Jedis jedis = Bukkit.getRedis().getResource()) {
                     jedis.set("bukkitsettings:metadata:" + this.player.getUniqueId().toString() + ":" + getMetadataKey(setting), setting.getType().serialize(value));
             }
