@@ -7,15 +7,18 @@ import javax.annotation.Nullable;
 
 import me.anxuiz.settings.Setting;
 import me.anxuiz.settings.SettingCallbackManager;
+import me.anxuiz.settings.TypeParseException;
 import me.anxuiz.settings.base.AbstractSettingManager;
 import me.anxuiz.settings.base.SimpleSettingCallbackManager;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.plugin.Plugin;
 
 import com.google.common.base.Preconditions;
+import redis.clients.jedis.Jedis;
 
 public class PlayerSettingManager extends AbstractSettingManager {
     protected final @Nullable Plugin parent;
@@ -38,8 +41,24 @@ public class PlayerSettingManager extends AbstractSettingManager {
     @Override
     public Object getRawValue(Setting setting) {
         Preconditions.checkNotNull(setting, "setting");
+        Object value = null;
 
-        Object value = this.getMetadataValue(getMetadataKey(setting));
+        if ("StruckBukkit".equals(Bukkit.getName()) && Bukkit.getRedis() != null) {
+            try (Jedis jedis = Bukkit.getRedis().getResource()) {
+                String rawRedis = jedis.get("bukkitsettings:metadata:" + this.player.getUniqueId().toString() + ":" + getMetadataKey(setting));
+                if (rawRedis == null) {
+                    jedis.set("bukkitsettings:metadata:" + this.player.getUniqueId().toString() + ":" + getMetadataKey(setting), setting.getType().serialize(setting.getDefaultValue()));
+                }
+                try {
+                    value = setting.getType().parse(jedis.get("bukkitsettings:metadata:" + this.player.getUniqueId().toString() + ":" + getMetadataKey(setting)));
+                } catch (TypeParseException e) {
+                    e.printStackTrace();
+                }
+            }
+        } else {
+            value = this.getMetadataValue(getMetadataKey(setting));
+        }
+
 
         if(value != null && setting.getType().isInstance(value)) {
             return value;
@@ -61,7 +80,15 @@ public class PlayerSettingManager extends AbstractSettingManager {
 
         this.callbackManager.notifyChange(this, setting, oldValue, value, notifyGlobal);
 
-        this.player.setMetadata(getMetadataKey(setting), new FixedMetadataValue(this.parent, value));
+        if ("StruckBukkit".equals(Bukkit.getName()) && Bukkit.getRedis() != null) {
+            try (Jedis jedis = Bukkit.getRedis().getResource()) {
+                    jedis.set("bukkitsettings:metadata:" + this.player.getUniqueId().toString() + ":" + getMetadataKey(setting), setting.getType().serialize(value));
+            }
+        } else {
+            this.player.setMetadata(getMetadataKey(setting), new FixedMetadataValue(this.parent, value));
+        }
+
+
     }
 
     public void deleteValue(Setting setting) {
