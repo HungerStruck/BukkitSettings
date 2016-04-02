@@ -18,6 +18,7 @@ import org.bukkit.metadata.MetadataValue;
 import org.bukkit.plugin.Plugin;
 
 import com.google.common.base.Preconditions;
+import redis.clients.jedis.Jedis;
 
 public class PlayerSettingManager extends AbstractSettingManager {
     protected final @Nullable Plugin parent;
@@ -41,15 +42,23 @@ public class PlayerSettingManager extends AbstractSettingManager {
     public Object getRawValue(Setting setting) {
         Preconditions.checkNotNull(setting, "setting");
         Object value = null;
-        if (Bukkit.getRedis() != null && Bukkit.getRedis().getResource() != null) {
-            try {
-                value = setting.getType().parse(Bukkit.getRedis().getResource().get("BUKKITSETTINGS:METADATA:" + this.player.getUniqueId().toString() + ":" + getMetadataKey(setting)));
-            } catch (TypeParseException e) {
-                e.printStackTrace();
+
+        if (Bukkit.getRedis() != null) {
+            try (Jedis jedis = Bukkit.getRedis().getResource()) {
+                String rawRedis = jedis.get("bukkitsettings:metadata:" + this.player.getUniqueId().toString() + ":" + getMetadataKey(setting));
+                if (rawRedis == null) {
+                    jedis.set("bukkitsettings:metadata:" + this.player.getUniqueId().toString() + ":" + getMetadataKey(setting), setting.getType().serialize(setting.getDefaultValue()));
+                }
+                try {
+                    value = setting.getType().parse(jedis.get("bukkitsettings:metadata:" + this.player.getUniqueId().toString() + ":" + getMetadataKey(setting)));
+                } catch (TypeParseException e) {
+                    e.printStackTrace();
+                }
             }
         } else {
-            value = this.getMetadataValue(getMetadataKey(setting));;
+            value = this.getMetadataValue(getMetadataKey(setting));
         }
+
 
         if(value != null && setting.getType().isInstance(value)) {
             return value;
@@ -71,11 +80,15 @@ public class PlayerSettingManager extends AbstractSettingManager {
 
         this.callbackManager.notifyChange(this, setting, oldValue, value, notifyGlobal);
 
-        if (Bukkit.getRedis() != null && Bukkit.getRedis().getResource() != null) {
-            Bukkit.getRedis().getResource().set("BUKKITSETTINGS:METADATA:" + this.player.getUniqueId().toString() + ":" + getMetadataKey(setting), setting.getType().serialize(value));
+        if (Bukkit.getRedis() != null) {
+            try (Jedis jedis = Bukkit.getRedis().getResource()) {
+                    jedis.set("bukkitsettings:metadata:" + this.player.getUniqueId().toString() + ":" + getMetadataKey(setting), setting.getType().serialize(value));
+            }
         } else {
             this.player.setMetadata(getMetadataKey(setting), new FixedMetadataValue(this.parent, value));
         }
+
+
     }
 
     public void deleteValue(Setting setting) {
